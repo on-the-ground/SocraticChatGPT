@@ -6,7 +6,8 @@
     <title>Chat Simulation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.2/marked.min.js"></script> <!-- 최신 버전으로 변경 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeit/8.8.7/index.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,21 +57,33 @@
     <div id="root"></div>
     <script>
         const messages = [
-            { message: "안녕 gpt! 🚀🔥", sender: 2 },
-            { message: "안녕 **gcjoohyung**", sender: 1 },
-            { message: "_이탤릭_과 **굵은 글씨** 테스트!", sender: 2 },
-            { message: "# Heading 테스트\n- 리스트1\n- 리스트2", sender: 1 }
+            { id: 1, message: "🚀 안녕 gpt", sender: 2 },
+            { id: 2, message: "안녕 **gcjoohyung** 🔥", sender: 1 },
+            { id: 3, message: "_이탤릭_과 **굵은 글씨** 테스트!", sender: 2 },
+            { id: 4, message: "# Heading 테스트\n- 리스트1\n- 리스트2", sender: 1 }
         ];
 
         function ChatFeed() {
             const [visibleMessages, setVisibleMessages] = React.useState([]);
 
             React.useEffect(() => {
-                messages.forEach((msg, index) => {
-                    setTimeout(() => {
-                        setVisibleMessages(prevMessages => [...prevMessages, msg]);
-                    }, index * 2000); // 1초 간격으로 메시지 추가
-                });
+                const addMessageSequentially = async () => {
+                    for (let i = 0; i < messages.length; i++) {
+                        await new Promise(resolve => {
+                            setVisibleMessages(prevMessages => [...prevMessages, messages[i]]);
+                            setTimeout(() => {
+                                new TypeIt(`#msg-${messages[i].id}`, {
+                                    strings: [marked.parse(messages[i].message)],
+                                    speed: 50,
+                                    waitUntilVisible: true,
+                                    afterComplete: () => resolve()
+                                }).go();
+                            }, 100);
+                        });
+                        await new Promise(res => setTimeout(res, 1000)); // 1초 대기 후 다음 메시지
+                    }
+                };
+                addMessageSequentially();
             }, []);
 
             return React.createElement(
@@ -81,8 +94,8 @@
                         "div",
                         { key: msg.id, className: `message ${msg.sender === 1 ? "user" : "bot"}` },
                         React.createElement("div", {
-                            className: "bubble",
-                            dangerouslySetInnerHTML: { __html: marked.parse(msg.message) }
+                            id: `msg-${msg.id}`,
+                            className: "bubble"
                         })
                     )
                 )
