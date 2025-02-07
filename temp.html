@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.2/marked.min.js"></script> <!-- 최신 버전으로 변경 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        .user {
+            justify-content: flex-start;
+        }
+        .bot {
+            justify-content: flex-end;
+        }
+        .bubble {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .user .bubble {
+            background: #d1e7fd;
+            color: black;
+        }
+        .bot .bubble {
+            background: #c1f0c1;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        const messages = [
+            { message: "안녕 gpt! 🚀🔥", sender: 2 },
+            { message: "안녕 **gcjoohyung**", sender: 1 },
+            { message: "_이탤릭_과 **굵은 글씨** 테스트!", sender: 2 },
+            { message: "# Heading 테스트\n- 리스트1\n- 리스트2", sender: 1 }
+        ];
+
+        function ChatFeed() {
+            const [visibleMessages, setVisibleMessages] = React.useState([]);
+
+            React.useEffect(() => {
+                messages.forEach((msg, index) => {
+                    setTimeout(() => {
+                        setVisibleMessages(prevMessages => [...prevMessages, msg]);
+                    }, index * 2000); // 1초 간격으로 메시지 추가
+                });
+            }, []);
+
+            return React.createElement(
+                "div",
+                { className: "chat-container" },
+                visibleMessages.map(msg =>
+                    React.createElement(
+                        "div",
+                        { key: msg.id, className: `message ${msg.sender === 1 ? "user" : "bot"}` },
+                        React.createElement("div", {
+                            className: "bubble",
+                            dangerouslySetInnerHTML: { __html: marked.parse(msg.message) }
+                        })
+                    )
+                )
+            );
+        }
+
+        ReactDOM.render(React.createElement(ChatFeed), document.getElementById("root"));
+    </script>
+</body>
+</html>
