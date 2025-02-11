@@ -81,16 +81,14 @@
     <div id="root"></div>
 
     <script>
-        const chatsDir = "chats/"; // JSON 파일 저장 경로
+        const chatsDir = "chats/";
         const chatFiles = ["chat1.json", "conversation-about-ai.json", "my-thoughts-on-tech.json"];
-        
+
         function formatFileName(filename) {
-            return filename.replace(".json", "").replace(/-/g, " "); // "-"를 공백으로 변경
+            return filename.replace(".json", "").replace(/-/g, " ");
         }
 
-        function Tabs({ onSelect }) {
-            const [activeTab, setActiveTab] = React.useState(chatFiles[0]);
-
+        function Tabs({ onSelect, activeTab }) {
             return React.createElement(
                 "div",
                 { className: "tabs" },
@@ -100,10 +98,7 @@
                         {
                             key: file,
                             className: `tab ${activeTab === file ? "active" : ""}`,
-                            onClick: () => {
-                                setActiveTab(file);
-                                onSelect(file);
-                            }
+                            onClick: () => onSelect(file)
                         },
                         formatFileName(file)
                     )
@@ -111,36 +106,45 @@
             );
         }
 
-        function ChatFeed({ chatData }) {
-            const [visibleMessages, setVisibleMessages] = React.useState([]);
+        function ChatFeed({ chatData, currentTab }) {
+            const messagesRef = React.useRef({});
+            const [visibleMessages, setVisibleMessages] = React.useState(messagesRef.current[currentTab] || []);
+
             React.useEffect(() => {
-                setVisibleMessages([]); // 새 대화 로드 시 초기화
-                if (chatData.length > 0) {
-                    loadMessages(chatData);
+                if (!messagesRef.current[currentTab]) {
+                    messagesRef.current[currentTab] = [];
                 }
-            }, [chatData]);
+                setVisibleMessages(messagesRef.current[currentTab]);
 
-            async function loadMessages(messages) {
-                for (const msg of messages) {
-                    setVisibleMessages(prevMessages => [...prevMessages, msg]);
-                    await sleepMs(100);
+                async function loadMessages() {
+                    for (const msg of chatData) {
+                        if (messagesRef.current[currentTab].some(m => m.id === msg.id)) {
+                            continue;
+                        }
 
-                    await new Promise(res => {
-                        const inst = new TypeIt(`#msg-${msg.id}`, {
-                            strings: [marked.parse(msg.message)],
-                            speed: 50,
-                            waitUntilVisible: true,
-                            afterComplete: () => {
-                                inst.destroy();
-                                res();
-                            }
-                        }).go();
-                    });
-                    await sleepMs(2000);
+                        messagesRef.current[currentTab].push(msg);
+                        setVisibleMessages([...messagesRef.current[currentTab]]);
+                        await sleepMs(100);
+
+                        await new Promise(res => {
+                            const inst = new TypeIt(`#msg-${msg.id}`, {
+                                strings: [marked.parse(msg.message)],
+                                speed: 50,
+                                waitUntilVisible: true,
+                                afterComplete: () => {
+                                    inst.destroy();
+                                    res();
+                                }
+                            }).go();
+                        });
+                        await sleepMs(2000);
+                    }
                 }
-            }
 
-            async function sleepMs(ms) {
+                loadMessages();
+            }, [chatData, currentTab]);
+
+            function sleepMs(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
@@ -162,23 +166,29 @@
 
         function App() {
             const [chatData, setChatData] = React.useState([]);
+            const [currentTab, setCurrentTab] = React.useState(chatFiles[0]);
 
             function loadChat(file) {
-                fetch(chatsDir + file)
-                    .then(response => response.json())
-                    .then(data => setChatData(data.messages))
-                    .catch(error => console.error("대화를 불러오는 중 오류 발생:", error));
+                if (currentTab === file) return;
+                setCurrentTab(file);
+                if (messagesRef.current[file]) {
+                    setChatData(messagesRef.current[file]);
+                } else {
+                    fetch(chatsDir + file)
+                        .then(response => response.json())
+                        .then(data => {
+                            messagesRef.current[file] = data.messages;
+                            setChatData(data.messages);
+                        })
+                        .catch(error => console.error("대화를 불러오는 중 오류 발생:", error));
+                }
             }
-
-            React.useEffect(() => {
-                loadChat(chatFiles[0]); // 첫 번째 대화 자동 로드
-            }, []);
 
             return React.createElement(
                 "div",
                 { className: "container" },
-                React.createElement(Tabs, { onSelect: loadChat }),
-                React.createElement(ChatFeed, { chatData })
+                React.createElement(Tabs, { onSelect: loadChat, activeTab: currentTab }),
+                React.createElement(ChatFeed, { chatData, currentTab })
             );
         }
 
