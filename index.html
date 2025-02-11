@@ -109,9 +109,11 @@
 
         function ChatFeed({ chatData, currentTab }) {
             const messagesRef = React.useRef({});
-            const [visibleMessages, setVisibleMessages] = React.useState(messagesRef.current[currentTab] || []);
+            const [visibleMessages, setVisibleMessages] = React.useState([]);
 
             React.useEffect(() => {
+                if (!chatData || chatData.length === 0) return;
+
                 if (!messagesRef.current[currentTab]) {
                     messagesRef.current[currentTab] = [];
                 }
@@ -127,9 +129,14 @@
                         setVisibleMessages([...messagesRef.current[currentTab]]);
                         await sleepMs(100);
 
+                        const msgElement = document.getElementById(`msg-${msg.id}`);
+                        if (msgElement) {
+                            msgElement.innerHTML = marked.parse(msg.message);
+                        }
+
                         await new Promise(res => {
                             const inst = new TypeIt(`#msg-${msg.id}`, {
-                                strings: [marked.parse(msg.message)],
+                                strings: [msg.message],
                                 speed: 50,
                                 waitUntilVisible: true,
                                 afterComplete: () => {
@@ -168,10 +175,12 @@
         function App() {
             const [chatData, setChatData] = React.useState([]);
             const [currentTab, setCurrentTab] = React.useState(chatFiles[0]);
+            const messagesRef = React.useRef({});
 
             function loadChat(file) {
                 if (currentTab === file) return;
                 setCurrentTab(file);
+
                 if (messagesRef.current[file]) {
                     setChatData(messagesRef.current[file]);
                 } else {
@@ -184,6 +193,10 @@
                         .catch(error => console.error("대화를 불러오는 중 오류 발생:", error));
                 }
             }
+
+            React.useEffect(() => {
+                loadChat(currentTab);
+            }, []);
 
             return React.createElement(
                 "div",
