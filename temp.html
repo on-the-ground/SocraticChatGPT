@@ -17,14 +17,38 @@
             align-items: center;
             height: 100vh;
         }
-        .chat-container {
-            width: 400px;
+        .container {
+            display: flex;
+            width: 600px;
+            height: 500px;
             background: white;
-            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            width: 150px;
+            background: #eee;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+        }
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            background: #f4f4f4;
+        }
+        .tab.active {
+            background: #ddd;
+            font-weight: bold;
+        }
+        .chat-container {
+            flex: 1;
+            padding: 20px;
             overflow-y: auto;
-            max-height: 500px;
         }
         .message {
             display: flex;
@@ -55,36 +79,70 @@
 </head>
 <body>
     <div id="root"></div>
+
     <script>
-        const messages = [
-            { id: 1, message: "🚀 안녕 gpt", sender: 2 },
-            { id: 2, message: "안녕 **gcjoohyung** 🔥", sender: 1 },
-            { id: 3, message: "_이탤릭_과 **굵은 글씨** 테스트!", sender: 2 },
-            { id: 4, message: "# Heading 테스트\n- 리스트1\n- 리스트2", sender: 1 }
-        ];
+        const chatsDir = "chats/"; // JSON 파일 저장 경로
+        const chatFiles = ["chat1.json", "conversation-about-ai.json", "my-thoughts-on-tech.json"];
+        
+        function formatFileName(filename) {
+            return filename.replace(".json", "").replace(/-/g, " "); // "-"를 공백으로 변경
+        }
 
-        function ChatFeed() {
+        function Tabs({ onSelect }) {
+            const [activeTab, setActiveTab] = React.useState(chatFiles[0]);
+
+            return React.createElement(
+                "div",
+                { className: "tabs" },
+                chatFiles.map(file =>
+                    React.createElement(
+                        "div",
+                        {
+                            key: file,
+                            className: `tab ${activeTab === file ? "active" : ""}`,
+                            onClick: () => {
+                                setActiveTab(file);
+                                onSelect(file);
+                            }
+                        },
+                        formatFileName(file)
+                    )
+                )
+            );
+        }
+
+        function ChatFeed({ chatData }) {
             const [visibleMessages, setVisibleMessages] = React.useState([]);
-
             React.useEffect(() => {
-                const addMessageSequentially = async () => {
-                    for (let i = 0; i < messages.length; i++) {
-                        await new Promise(resolve => {
-                            setVisibleMessages(prevMessages => [...prevMessages, messages[i]]);
-                            setTimeout(() => {
-                                new TypeIt(`#msg-${messages[i].id}`, {
-                                    strings: [marked.parse(messages[i].message)],
-                                    speed: 50,
-                                    waitUntilVisible: true,
-                                    afterComplete: () => resolve()
-                                }).go();
-                            }, 100);
-                        });
-                        await new Promise(res => setTimeout(res, 1000)); // 1초 대기 후 다음 메시지
-                    }
-                };
-                addMessageSequentially();
-            }, []);
+                setVisibleMessages([]); // 새 대화 로드 시 초기화
+                if (chatData.length > 0) {
+                    loadMessages(chatData);
+                }
+            }, [chatData]);
+
+            async function loadMessages(messages) {
+                for (const msg of messages) {
+                    setVisibleMessages(prevMessages => [...prevMessages, msg]);
+                    await sleepMs(100);
+
+                    await new Promise(res => {
+                        const inst = new TypeIt(`#msg-${msg.id}`, {
+                            strings: [marked.parse(msg.message)],
+                            speed: 50,
+                            waitUntilVisible: true,
+                            afterComplete: () => {
+                                inst.destroy();
+                                res();
+                            }
+                        }).go();
+                    });
+                    await sleepMs(2000);
+                }
+            }
+
+            async function sleepMs(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
 
             return React.createElement(
                 "div",
@@ -102,7 +160,29 @@
             );
         }
 
-        ReactDOM.render(React.createElement(ChatFeed), document.getElementById("root"));
+        function App() {
+            const [chatData, setChatData] = React.useState([]);
+
+            function loadChat(file) {
+                fetch(chatsDir + file)
+                    .then(response => response.json())
+                    .then(data => setChatData(data.messages))
+                    .catch(error => console.error("대화를 불러오는 중 오류 발생:", error));
+            }
+
+            React.useEffect(() => {
+                loadChat(chatFiles[0]); // 첫 번째 대화 자동 로드
+            }, []);
+
+            return React.createElement(
+                "div",
+                { className: "container" },
+                React.createElement(Tabs, { onSelect: loadChat }),
+                React.createElement(ChatFeed, { chatData })
+            );
+        }
+
+        ReactDOM.render(React.createElement(App), document.getElementById("root"));
     </script>
 </body>
 </html>
