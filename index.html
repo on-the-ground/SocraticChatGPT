@@ -22,22 +22,48 @@
 
         .container {
             display: flex;
-            width: 90vw; /* 🔹 전체 창의 90% 차지 (반응형) */
-            height: 90vh; /* 🔹 전체 창의 90% 차지 */
-            max-width: 1200px; /* 🔹 최대 크기 제한 (너무 커지지 않도록) */
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: relative;
         }
 
         .tabs {
             display: flex;
             flex-direction: column;
-            width: 150px;
+            width: 200px; /* 🔹 기본 크기 */
             background: #eee;
             padding: 10px;
             border-right: 1px solid #ccc;
+            transition: width 0.3s ease-in-out; /* 🔹 부드러운 애니메이션 */
+        }
+
+        .tabs.hidden {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+
+        .toggle-tabs-button {
+            position: absolute;
+            left: 200px; /* 🔹 기본적으로 탭 옆에 위치 */
+            top: 10px;
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: left 0.3s ease-in-out;
+        }
+
+        .container .tabs.hidden + .toggle-tabs-button {
+            left: 0; /* 🔹 탭이 접히면 버튼 위치 변경 */
         }
 
         .tab {
@@ -197,45 +223,43 @@
             );
         }
 
-
         function App() {
-            const [chatFiles, setChatFiles] = React.useState([]); // JSON에서 가져온 파일 목록
-            const [currentTab, setCurrentTab] = React.useState(null); // 현재 선택된 탭
+            const [chatFiles, setChatFiles] = React.useState([]);
+            const [currentTab, setCurrentTab] = React.useState(null);
             const [chatData, setChatData] = React.useState([]);
-            const messagesRef = React.useRef({});
+            const [isTabsOpen, setIsTabsOpen] = React.useState(true); // 🔹 탭이 열려있는지 여부
+            const [messagesCache, setMessagesCache] = React.useState({});
 
             // 📌 1️⃣ JSON 파일 목록을 비동기적으로 로드
             React.useEffect(() => {
                 async function fetchChatFiles() {
                     try {
-                        const response = await fetch(chatsDir + "index.json");
+                        const response = await fetch("chats/index.json");
                         const data = await response.json();
                         setChatFiles(data.files);
-
-                        // 첫 번째 파일을 기본 선택
                         if (data.files.length > 0) {
-                            setCurrentTab(data.files[0]); // 첫 번째 채팅 파일을 초기 선택
+                            setCurrentTab(data.files[0]);
                         }
                     } catch (error) {
                         console.error("파일 리스트 불러오는 중 오류 발생:", error);
                     }
                 }
-
                 fetchChatFiles();
             }, []);
 
             // 📌 2️⃣ 선택된 탭의 채팅 내용을 불러옴
             React.useEffect(() => {
-                async function loadChat(file) {
-                    if (!file) return;
+                if (!currentTab) return;
+                setChatData([]); // 이전 채팅 삭제 후 새로운 채팅 불러오기
 
-                    if (messagesRef.current[file]) {
-                        setChatData(messagesRef.current[file]); // 캐시된 데이터 사용
+                async function loadChat(file) {
+                    if (messagesCache[file]) {
+                        setChatData(messagesCache[file]); // 캐시된 데이터 사용
                     } else {
                         try {
-                            const response = await fetch(chatsDir + file);
+                            const response = await fetch(`chats/${file}`);
                             const data = await response.json();
-                            messagesRef.current[file] = data.messages;
+                            setMessagesCache(prev => ({ ...prev, [file]: data.messages }));
                             setChatData(data.messages);
                         } catch (error) {
                             console.error("대화를 불러오는 중 오류 발생:", error);
@@ -249,7 +273,11 @@
             return React.createElement(
                 "div",
                 { className: "container" },
-                React.createElement(Tabs, { onSelect: setCurrentTab, activeTab: currentTab, chatFiles }),
+                isTabsOpen && React.createElement(Tabs, { onSelect: setCurrentTab, activeTab: currentTab, chatFiles }),
+                React.createElement("button", { 
+                    className: "toggle-tabs-button",
+                    onClick: () => setIsTabsOpen(prev => !prev)
+                }, isTabsOpen ? "◀" : "▶"), // 🔹 탭 상태에 따라 버튼 아이콘 변경
                 React.createElement(ChatFeed, { chatData, currentTab })
             );
         }
