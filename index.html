@@ -83,13 +83,12 @@
 
     <script>
         const chatsDir = "chats/";
-        const chatFiles = ["chat1.json", "conversation-about-ai.json", "my-thoughts-on-tech.json"];
 
         function formatFileName(filename) {
             return filename.replace(".json", "").replace(/-/g, " ");
         }
 
-        function Tabs({ onSelect, activeTab }) {
+        function Tabs({ onSelect, activeTab, chatFiles }) {
             return React.createElement(
                 "div",
                 { className: "tabs" },
@@ -167,35 +166,57 @@
         }
 
         function App() {
+            const [chatFiles, setChatFiles] = React.useState([]); // JSON에서 가져온 파일 목록
+            const [currentTab, setCurrentTab] = React.useState(null); // 현재 선택된 탭
             const [chatData, setChatData] = React.useState([]);
-            const [currentTab, setCurrentTab] = React.useState(chatFiles[0]);
             const messagesRef = React.useRef({});
 
-            function loadChat(file) {
-                if (currentTab === file) return;
-                setCurrentTab(file);
+            // 📌 1️⃣ JSON 파일 목록을 비동기적으로 로드
+            React.useEffect(() => {
+                async function fetchChatFiles() {
+                    try {
+                        const response = await fetch(chatsDir + "index.json");
+                        const data = await response.json();
+                        setChatFiles(data.files);
 
-                if (messagesRef.current[file]) {
-                    setChatData(messagesRef.current[file]);
-                } else {
-                    fetch(chatsDir + file)
-                        .then(response => response.json())
-                        .then(data => {
+                        // 첫 번째 파일을 기본 선택
+                        if (data.files.length > 0) {
+                            setCurrentTab(data.files[0]); // 첫 번째 채팅 파일을 초기 선택
+                        }
+                    } catch (error) {
+                        console.error("파일 리스트 불러오는 중 오류 발생:", error);
+                    }
+                }
+
+                fetchChatFiles();
+            }, []);
+
+            // 📌 2️⃣ 선택된 탭의 채팅 내용을 불러옴
+            React.useEffect(() => {
+                async function loadChat(file) {
+                    if (!file) return;
+
+                    if (messagesRef.current[file]) {
+                        setChatData(messagesRef.current[file]); // 캐시된 데이터 사용
+                    } else {
+                        try {
+                            const response = await fetch(chatsDir + file);
+                            const data = await response.json();
                             messagesRef.current[file] = data.messages;
                             setChatData(data.messages);
-                        })
-                        .catch(error => console.error("대화를 불러오는 중 오류 발생:", error));
+                        } catch (error) {
+                            console.error("대화를 불러오는 중 오류 발생:", error);
+                        }
+                    }
                 }
-            }
 
-            React.useEffect(() => {
                 loadChat(currentTab);
-            }, []);
+            }, [currentTab]);
 
             return React.createElement(
                 "div",
                 { className: "container" },
-                React.createElement(Tabs, { onSelect: loadChat, activeTab: currentTab }),
+                React.createElement(Tabs, { onSelect: setCurrentTab, activeTab: currentTab, chatFiles }),
                 React.createElement(ChatFeed, { chatData, currentTab })
             );
         }
