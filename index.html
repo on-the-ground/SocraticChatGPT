@@ -17,61 +17,64 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
         }
+
         .container {
             display: flex;
-            width: 600px;
-            height: 500px;
+            width: 90vw; /* 🔹 전체 창의 90% 차지 (반응형) */
+            height: 90vh; /* 🔹 전체 창의 90% 차지 */
+            max-width: 1200px; /* 🔹 최대 크기 제한 (너무 커지지 않도록) */
             background: white;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
+
         .tabs {
             display: flex;
             flex-direction: column;
-            width: 150px;
+            width: 200px; /* 🔹 고정 크기 */
             background: #eee;
             padding: 10px;
             border-right: 1px solid #ccc;
         }
-        .tab {
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            background: #f4f4f4;
-        }
-        .tab.active {
-            background: #ddd;
-            font-weight: bold;
-        }
+
         .chat-container {
-            flex: 1;
+            flex: 1; /* 🔹 남은 공간을 모두 차지 */
+            display: flex;
+            flex-direction: column;
             padding: 20px;
             overflow-y: auto;
         }
+
         .message {
             display: flex;
             margin-bottom: 10px;
-            max-width: 80%;
+            max-width: 70%; /* 🔹 메시지 폭을 가변적으로 설정 */
+            word-wrap: break-word;
         }
+
         .user {
             justify-content: flex-start;
         }
+
         .bot {
             justify-content: flex-end;
         }
+
         .bubble {
             padding: 10px;
             border-radius: 10px;
-            max-width: 70%;
+            max-width: 100%; /* 🔹 부모 요소에 맞게 가변 크기 */
             word-wrap: break-word;
         }
+
         .user .bubble {
             background: #d1e7fd;
             color: black;
         }
+
         .bot .bubble {
             background: #c1f0c1;
             color: black;
