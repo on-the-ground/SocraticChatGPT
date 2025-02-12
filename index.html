@@ -128,15 +128,9 @@
                         messagesRef.current[currentTab].push(msg);
                         setVisibleMessages([...messagesRef.current[currentTab]]);
                         await sleepMs(100);
-
-                        const msgElement = document.getElementById(`msg-${msg.id}`);
-                        if (msgElement) {
-                            msgElement.innerHTML = marked.parse(msg.message);
-                        }
-
                         await new Promise(res => {
                             const inst = new TypeIt(`#msg-${msg.id}`, {
-                                strings: [msg.message],
+                                strings: [marked.parse(msg.message)],
                                 speed: 50,
                                 waitUntilVisible: true,
                                 afterComplete: () => {
