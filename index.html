@@ -34,10 +34,23 @@
         .tabs {
             display: flex;
             flex-direction: column;
-            width: 200px; /* 🔹 고정 크기 */
+            width: 150px;
             background: #eee;
             padding: 10px;
             border-right: 1px solid #ccc;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            background: #f4f4f4;
+        }
+
+        .tab.active {
+            background: #ddd;
+            font-weight: bold;
         }
 
         .chat-container {
@@ -144,22 +157,25 @@
                             }).go();
                         });
 
-                        // 📌 새로운 메시지가 추가될 때마다 스크롤을 최신 메시지로 이동
-                        scrollToBottom();
-
-                        await sleepMs(2000);
+                        await sleepMs(1000);
                     }
                 }
 
                 loadMessages();
             }, [chatData, currentTab]);
 
-            // 📌 최신 메시지가 추가될 때마다 스크롤 이동 함수
+            // 📌 최신 메시지를 주기적으로 따라가는 함수
             function scrollToBottom() {
                 if (chatContainerRef.current) {
                     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
                 }
             }
+
+            // 📌 1초마다 스크롤을 최신 메시지로 이동 (타이핑 중에도 이동)
+            React.useEffect(() => {
+                const interval = setInterval(scrollToBottom, 1000); // 🔹 1초마다 실행
+                return () => clearInterval(interval); // 🔹 컴포넌트가 언마운트되면 정리
+            }, []);
 
             function sleepMs(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
