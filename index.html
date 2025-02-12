@@ -109,6 +109,7 @@
         function ChatFeed({ chatData, currentTab }) {
             const messagesRef = React.useRef({});
             const [visibleMessages, setVisibleMessages] = React.useState([]);
+            const chatContainerRef = React.useRef(null); // 📌 스크롤 컨테이너 ref 추가
 
             React.useEffect(() => {
                 if (!chatData || chatData.length === 0) return;
@@ -127,6 +128,7 @@
                         messagesRef.current[currentTab].push(msg);
                         setVisibleMessages([...messagesRef.current[currentTab]]);
                         await sleepMs(100);
+
                         await new Promise(res => {
                             const inst = new TypeIt(`#msg-${msg.id}`, {
                                 strings: [marked.parse(msg.message)],
@@ -138,6 +140,10 @@
                                 }
                             }).go();
                         });
+
+                        // 📌 새로운 메시지가 추가될 때마다 스크롤을 최신 메시지로 이동
+                        scrollToBottom();
+
                         await sleepMs(2000);
                     }
                 }
@@ -145,13 +151,20 @@
                 loadMessages();
             }, [chatData, currentTab]);
 
+            // 📌 최신 메시지가 추가될 때마다 스크롤 이동 함수
+            function scrollToBottom() {
+                if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                }
+            }
+
             function sleepMs(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
             return React.createElement(
                 "div",
-                { className: "chat-container" },
+                { className: "chat-container", ref: chatContainerRef }, // 📌 ref 추가
                 visibleMessages.map(msg =>
                     React.createElement(
                         "div",
@@ -164,6 +177,7 @@
                 )
             );
         }
+
 
         function App() {
             const [chatFiles, setChatFiles] = React.useState([]); // JSON에서 가져온 파일 목록
