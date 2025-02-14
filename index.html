@@ -137,7 +137,6 @@
         // ✅ Recoil 상태 관리
         const currentTabState = atom({ key: "currentTab", default: null });
         const isTabsOpenState = atom({ key: "isTabsOpen", default: true });
-        const isAtBottomState = atom({ key: "isAtBottomState", default: true });
 
         // ✅ 선택된 채팅 데이터 가져오기 (selector)
         const chatDataSelector = selector({
@@ -146,7 +145,7 @@
                 const currentTab = get(currentTabState);
                 if (!currentTab) return [];
 
-                console.log("Fetching chat data for:", currentTab);
+                // console.log("Fetching chat data for:", currentTab);
                 try {
                     const response = await fetch(chatsDir + currentTab);
                     if (!response.ok) {
@@ -162,7 +161,6 @@
             }
         });
 
-        const visibleMessagesState = atom({ key: "visibleMessagesState", default: [] });
 
         // ✅ 채팅 파일 목록 가져오기 (selector)
         const chatFilesState = selector({
@@ -175,7 +173,7 @@
                         return [];
                     }
                     const data = await response.json();
-                    console.log("Chat index loaded:", data.files);
+                    // console.log("Chat index loaded:", data.files);
                     return data.files || [];
                 } catch (error) {
                     console.error("Fetch failed:", error);
@@ -211,26 +209,35 @@
 
         function ChatFeed() {
             const chatContainerRef = React.useRef(null);
+            const [isAtBottom, setIsAtBottom] = React.useState(true);
+            const isAtBottomRef = React.useRef(isAtBottom);
             
             const chatData = useRecoilValue(chatDataSelector);
-            const [visibleMessages, setVisibleMessages] = useRecoilState(visibleMessagesState);
 
-            const [isAtBottom, setIsAtBottom] = useRecoilState(isAtBottomState);
-            React.useEffect(() => {
-                if (!isAtBottom) return;
+            function scrollToBottomByPeriod() {
+                if(!isAtBottomRef.current) return;
+                // console.log("isAtBottomRef.current:", isAtBottomRef.current);
+                // console.log("chatContainerRef.current:", chatContainerRef.current);
                 if (chatContainerRef.current) {
                     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
                 }
-            }, [isAtBottom, visibleMessages]);
+                setTimeout(scrollToBottomByPeriod, 1000);
+            }
+
+            React.useEffect(() => {
+                isAtBottomRef.current = isAtBottom; // ✅ 최신 값을 ref에 동기화
+                scrollToBottomByPeriod();
+            }, [isAtBottom]);
             
+            const [visibleMessages, setVisibleMessages] = React.useState([]); // todo 요거 Ref로 반경가능?
             const currentTab = useRecoilValue(currentTabState);
             React.useEffect(() => {
                 setVisibleMessages([]);  // 새로운 채팅을 불러올 때 상태 초기화
             }, [currentTab]);
 
             async function loadMessages(chatData) {
-                for (const msg of chatData) {
-                    if (visibleMessages.some(m => m.id === msg.id)) {
+                for (const [msgId, msg] of chatData.entries()) {
+                    if (visibleMessages.some(m => m.id === msgId)) {
                         continue;
                     }
 
@@ -238,7 +245,7 @@
                     await sleepMs(100);
 
                     await new Promise(res => {
-                        const inst = new TypeIt(`#msg-${msg.id}`, {
+                        const inst = new TypeIt(`#msg-${msgId}`, {
                             strings: [marked.parse(msg.message)],
                             speed: 50,
                             waitUntilVisible: true,
@@ -262,24 +269,26 @@
                 loadMessages(chatData);
             }, [chatData]);
 
-            console.log("ChatFeed Rendered - chatData:", chatData); // ✅ 데이터가 들어오는지 확인
-            console.log("ChatFeed Rendered - visibleMessages:", visibleMessages); // ✅ 상태 확인
+            // console.log("ChatFeed Rendered - chatData:", chatData); // ✅ 데이터가 들어오는지 확인
+            // console.log("ChatFeed Rendered - visibleMessages:", visibleMessages); // ✅ 상태 확인
 
 
-            const handleScroll = () => {
+            const handleScroll = () => { 
                 if (!chatContainerRef.current) return;
                 const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-                setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+                const isBottom = scrollTop + clientHeight >= scrollHeight - 10;
+                // console.log("handleScroll.isBottom:", isBottom);
+                setIsAtBottom(isBottom);
             };
 
 
             return visibleMessages.length === 0
             ? <div className="chat-container">Loading messages...</div>
             : (
-                <div className="chat-container" ref={chatContainerRef}>
-                    {visibleMessages.map(msg => (
-                        <div key={msg.id} className={`message ${msg.sender === 1 ? "user" : "bot"}`}>
-                            <div id={`msg-${msg.id}`} className="bubble"></div>
+                <div className="chat-container" ref={chatContainerRef} onScroll={handleScroll}>
+                    {visibleMessages.entries().map(([msgId, msg]) => (
+                        <div key={msgId} className={`message ${msg.sender === 1 ? "user" : "bot"}`}>
+                            <div id={`msg-${msgId}`} className="bubble"></div>
                         </div>
                     ))}
                 </div>

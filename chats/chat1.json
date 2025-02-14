@@ -1,8 +1,8 @@
 {
     "messages": [
-        { "id": 1, "message": "🚀 안녕 gpt", "sender": 2 },
-        { "id": 2, "message": "안녕 **gcjoohyung** 🔥", "sender": 1 },
-        { "id": 3, "message": "_이탤릭_과 **굵은 글씨** 테스트!", "sender": 2 },
-        { "id": 4, "message": "# Heading 테스트\n- 리스트1\n- 리스트2", "sender": 1 }
+        { "message": "🚀 안녕 gpt", "sender": 2 },
+        { "message": "안녕 **gcjoohyung** 🔥", "sender": 1 },
+        { "message": "__이탤릭__과 **굵은 글씨** 테스트!", "sender": 2 },
+        { "message": "# Heading 테스트\n- 리스트1\n- 리스트2", "sender": 1 }
     ]
 }
