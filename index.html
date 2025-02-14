@@ -276,7 +276,8 @@
             const handleScroll = () => { 
                 if (!chatContainerRef.current) return;
                 const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-                const isBottom = scrollTop + clientHeight >= scrollHeight - 10;
+                const margin = 50;
+                const isBottom = scrollTop + clientHeight >= scrollHeight - margin;
                 // console.log("handleScroll.isBottom:", isBottom);
                 setIsAtBottom(isBottom);
             };
