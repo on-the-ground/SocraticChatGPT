@@ -145,7 +145,7 @@
                 const currentTab = get(currentTabState);
                 if (!currentTab) return [];
 
-                // console.log("Fetching chat data for:", currentTab);
+                console.log("Fetching chat data for:", currentTab);
                 try {
                     const response = await fetch(chatsDir + currentTab);
                     if (!response.ok) {
@@ -228,23 +228,30 @@
                 isAtBottomRef.current = isAtBottom; // ✅ 최신 값을 ref에 동기화
                 scrollToBottomByPeriod();
             }, [isAtBottom]);
-            
-            const [visibleMessages, setVisibleMessages] = React.useState([]); // todo 요거 Ref로 반경가능?
+
+            const [visibleMessages, setVisibleMessages] = React.useState([]);
             const currentTab = useRecoilValue(currentTabState);
+
+            // 🛑 기존 실행 중인 loadMessages를 취소하기 위한 ref 플래그
+            const loadMessagesCancelRef = React.useRef(false);
+
+            // 🆕 탭 전환 시 이전 loadMessages 취소 및 visibleMessages 초기화
             React.useEffect(() => {
+                loadMessagesCancelRef.current = true; // 이전 실행 중인 loadMessages 종료
                 setVisibleMessages([]);  // 새로운 채팅을 불러올 때 상태 초기화
+                loadMessagesCancelRef.current = false; // 새로운 메시지 로딩 허용
             }, [currentTab]);
 
             async function loadMessages(chatData) {
                 for (const [msgId, msg] of chatData.entries()) {
-                    if (visibleMessages.some(m => m.id === msgId)) {
-                        continue;
-                    }
+                    if (loadMessagesCancelRef.current) return; // 🛑 중단되었으면 종료
+                    if (visibleMessages.some(m => m.id === msgId)) continue;
 
                     setVisibleMessages(prev => [...prev, msg]);
                     await sleepMs(100);
 
                     await new Promise(res => {
+                        if (loadMessagesCancelRef.current) return res(); // 🛑 TypeIt 실행 전에 중단 체크
                         const inst = new TypeIt(`#msg-${msgId}`, {
                             strings: [marked.parse(msg.message)],
                             speed: 50,
@@ -254,6 +261,12 @@
                                 res();
                             }
                         }).go();
+
+                        // 🛑 탭이 바뀌면 즉시 TypeIt 제거
+                        if (loadMessagesCancelRef.current) {
+                            inst.destroy();
+                            res();
+                        }
                     });
 
                     await sleepMs(1000);
@@ -269,24 +282,18 @@
                 loadMessages(chatData);
             }, [chatData]);
 
-            // console.log("ChatFeed Rendered - chatData:", chatData); // ✅ 데이터가 들어오는지 확인
-            // console.log("ChatFeed Rendered - visibleMessages:", visibleMessages); // ✅ 상태 확인
-
-
             const handleScroll = () => { 
                 if (!chatContainerRef.current) return;
                 const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
                 const margin = 50;
                 const isBottom = scrollTop + clientHeight >= scrollHeight - margin;
-                // console.log("handleScroll.isBottom:", isBottom);
                 setIsAtBottom(isBottom);
             };
-
 
             return visibleMessages.length === 0
             ? <div className="chat-container">Loading messages...</div>
             : (
-                <div className="chat-container" ref={chatContainerRef} onScroll={handleScroll}>
+                <div className="chat-container" ref={chatContainerRef} onScroll={handleScroll} key={currentTab}>
                     {visibleMessages.entries().map(([msgId, msg]) => (
                         <div key={msgId} className={`message ${msg.sender === 1 ? "user" : "bot"}`}>
                             <div id={`msg-${msgId}`} className="bubble"></div>
