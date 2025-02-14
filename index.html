@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.2/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typeit/8.8.7/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recoil@0.7.7/umd/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
     <style>
         body {
@@ -121,24 +122,85 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        const { RecoilRoot, atom, selector, useRecoilState, useRecoilValue, useResetRecoilState } = Recoil;
+
         const chatsDir = "chats/";
 
         function sleepMs(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         function formatFileName(filename) {
             return filename.replace(".json", "").replace(/-/g, " ");
         }
 
-        function Tabs({ onSelect, activeTab, chatFiles }) {
+        // ✅ Recoil 상태 관리
+        const currentTabState = atom({ key: "currentTab", default: null });
+        const isTabsOpenState = atom({ key: "isTabsOpen", default: true });
+        const isAtBottomState = atom({ key: "isAtBottomState", default: true });
+
+        // ✅ 선택된 채팅 데이터 가져오기 (selector)
+        const chatDataSelector = selector({
+            key: "chatDataSelector",
+            get: async ({ get }) => {
+                const currentTab = get(currentTabState);
+                if (!currentTab) return [];
+
+                console.log("Fetching chat data for:", currentTab);
+                try {
+                    const response = await fetch(chatsDir + currentTab);
+                    if (!response.ok) {
+                        console.error("Failed to load chat data:", response.statusText);
+                        return [];
+                    }
+                    const data = await response.json();
+                    return data.messages || [];
+                } catch (error) {
+                    console.error("Fetch failed:", error);
+                    return [];
+                }
+            }
+        });
+
+        const visibleMessagesState = atom({ key: "visibleMessagesState", default: [] });
+
+        // ✅ 채팅 파일 목록 가져오기 (selector)
+        const chatFilesState = selector({
+            key: "chatFilesState",
+            get: async () => {
+                try {
+                    const response = await fetch(chatsDir + "index.json");
+                    if (!response.ok) {
+                        console.error("Failed to load chat index:", response.statusText);
+                        return [];
+                    }
+                    const data = await response.json();
+                    console.log("Chat index loaded:", data.files);
+                    return data.files || [];
+                } catch (error) {
+                    console.error("Fetch failed:", error);
+                    return [];
+                }
+            },
+        });
+
+        function Tabs() {
+            const chatFiles = useRecoilValue(chatFilesState);
+            const [currentTab, setCurrentTab] = useRecoilState(currentTabState);
+
+            React.useEffect(() => {
+                if (chatFiles.length > 0 && !currentTab) {
+                    setCurrentTab(chatFiles[0]); // ✅ 첫 번째 채팅 파일 자동 선택
+                }
+            }, [chatFiles]);
+
             return (
                 <div className="tabs">
                     {chatFiles.map(file => (
                         <div
                             key={file}
-                            className={`tab ${activeTab === file ? "active" : ""}`}
-                            onClick={() => onSelect(file)}
+                            className={`tab ${currentTab === file ? "active" : ""}`}
+                            onClick={() => setCurrentTab(file)}
                         >
                             {formatFileName(file)}
                         </div>
@@ -147,82 +209,73 @@
             );
         }
 
-        function ChatFeed({ chatData, currentTab }) {
-            const messagesRef = React.useRef({});
-            const [visibleMessages, setVisibleMessages] = React.useState([]);
+        function ChatFeed() {
             const chatContainerRef = React.useRef(null);
-            const [isAtBottom, setIsAtBottom] = React.useState(true);
+            
+            const chatData = useRecoilValue(chatDataSelector);
+            const [visibleMessages, setVisibleMessages] = useRecoilState(visibleMessagesState);
 
+            const [isAtBottom, setIsAtBottom] = useRecoilState(isAtBottomState);
             React.useEffect(() => {
-                if (!chatData || chatData.length === 0) return;
-
-                if (!messagesRef.current[currentTab]) {
-                    messagesRef.current[currentTab] = [];
-                }
-                setVisibleMessages(messagesRef.current[currentTab]);
-
-                async function loadMessages() {
-                    for (const msg of chatData) {
-                        if (messagesRef.current[currentTab].some(m => m.id === msg.id)) {
-                            continue;
-                        }
-
-                        messagesRef.current[currentTab].push(msg);
-                        setVisibleMessages([...messagesRef.current[currentTab]]);
-                        await sleepMs(100);
-
-                        await new Promise(res => {
-                            const inst = new TypeIt(`#msg-${msg.id}`, {
-                                strings: [marked.parse(msg.message)],
-                                speed: 50,
-                                waitUntilVisible: true,
-                                afterComplete: () => {
-                                    inst.destroy();
-                                    res();
-                                }
-                            }).go();
-                        });
-
-                        if (isAtBottom) scrollToBottom();
-
-                        await sleepMs(1000);
-                    }
-                }
-
-                loadMessages();
-            }, [chatData, currentTab]);
-
-            function scrollToBottom() {
-                if (chatContainerRef.current && isAtBottom) {
+                if (!isAtBottom) return;
+                if (chatContainerRef.current) {
                     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
                 }
+            }, [isAtBottom, visibleMessages]);
+            
+            const currentTab = useRecoilValue(currentTabState);
+            React.useEffect(() => {
+                setVisibleMessages([]);  // 새로운 채팅을 불러올 때 상태 초기화
+            }, [currentTab]);
+
+            async function loadMessages(chatData) {
+                for (const msg of chatData) {
+                    if (visibleMessages.some(m => m.id === msg.id)) {
+                        continue;
+                    }
+
+                    setVisibleMessages(prev => [...prev, msg]);
+                    await sleepMs(100);
+
+                    await new Promise(res => {
+                        const inst = new TypeIt(`#msg-${msg.id}`, {
+                            strings: [marked.parse(msg.message)],
+                            speed: 50,
+                            waitUntilVisible: true,
+                            afterComplete: () => {
+                                inst.destroy();
+                                res();
+                            }
+                        }).go();
+                    });
+
+                    await sleepMs(1000);
+                }
             }
 
-            // 📌 스크롤 이벤트 핸들러 (사용자가 스크롤을 위로 올리면 자동 스크롤 멈춤)
-            function handleScroll() {
+            React.useEffect(() => {
+                if (!chatData 
+                || chatData.length === 0 
+                || chatData.length === visibleMessages.length) {
+                    return;
+                }
+                loadMessages(chatData);
+            }, [chatData]);
+
+            console.log("ChatFeed Rendered - chatData:", chatData); // ✅ 데이터가 들어오는지 확인
+            console.log("ChatFeed Rendered - visibleMessages:", visibleMessages); // ✅ 상태 확인
+
+
+            const handleScroll = () => {
                 if (!chatContainerRef.current) return;
                 const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-                const isUserAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 🔹 약간의 마진 추가
+                setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+            };
 
-                setIsAtBottom(isUserAtBottom);
-            }
 
-            // 📌 1초마다 스크롤을 최신 메시지로 이동 (isAtBottom이 true일 때만)
-            React.useEffect(() => {
-                const interval = setInterval(scrollToBottom, 1000);
-                return () => clearInterval(interval);
-            }, [isAtBottom]); // 🔹 isAtBottom이 true일 때만 실행
-
-            // 📌 스크롤 이벤트 감지 (사용자가 움직이면 자동 스크롤 비활성화)
-            React.useEffect(() => {
-                const chatContainer = chatContainerRef.current;
-                if (!chatContainer) return;
-
-                chatContainer.addEventListener("scroll", handleScroll);
-                return () => chatContainer.removeEventListener("scroll", handleScroll);
-            }, []);
-
-            return (
+            return visibleMessages.length === 0
+            ? <div className="chat-container">Loading messages...</div>
+            : (
                 <div className="chat-container" ref={chatContainerRef}>
                     {visibleMessages.map(msg => (
                         <div key={msg.id} className={`message ${msg.sender === 1 ? "user" : "bot"}`}>
@@ -234,61 +287,33 @@
         }
 
         function App() {
-            const [chatFiles, setChatFiles] = React.useState([]);
-            const [currentTab, setCurrentTab] = React.useState(null);
-            const [chatData, setChatData] = React.useState([]);
-            const [isTabsOpen, setIsTabsOpen] = React.useState(true);
-
-            React.useEffect(() => {
-                async function fetchChatFiles() {
-                    try {
-                        const response = await fetch(chatsDir + "index.json");
-                        const data = await response.json();
-                        setChatFiles(data.files);
-                        if (data.files.length > 0) {
-                            setCurrentTab(data.files[0]);
-                        }
-                    } catch (error) {
-                        console.error("파일 리스트 불러오는 중 오류 발생:", error);
-                    }
-                }
-                fetchChatFiles();
-            }, []);
-
-            React.useEffect(() => {
-                if (!currentTab) return;
-                setChatData([]);
-
-                async function loadChat(file) {
-                    try {
-                        const response = await fetch(chatsDir + file);
-                        const data = await response.json();
-                        setChatData(data.messages);
-                    } catch (error) {
-                        console.error("대화를 불러오는 중 오류 발생:", error);
-                    }
-                }
-
-                loadChat(currentTab);
-            }, [currentTab]);
+            const [isTabsOpen, setIsTabsOpen] = useRecoilState(isTabsOpenState);
 
             return (
                 <div className={`container ${isTabsOpen ? "" : "full-width"}`}>
                     <div className="tabs-container">
-                        <button 
-                            className="toggle-tabs-button"
-                            onClick={() => setIsTabsOpen(prev => !prev)}
-                        >
+                        <button className="toggle-tabs-button" onClick={() => setIsTabsOpen(prev => !prev)}>
                             {isTabsOpen ? "<<" : ">>"}
                         </button>
-                        {isTabsOpen && <Tabs onSelect={setCurrentTab} activeTab={currentTab} chatFiles={chatFiles} />}
+                        {isTabsOpen && (
+                            <React.Suspense fallback={<div>Loading tabs...</div>}>
+                                <Tabs />
+                            </React.Suspense>
+                        )}
                     </div>
-                    <ChatFeed chatData={chatData} currentTab={currentTab} />
+                    <React.Suspense fallback={<div>Loading chat...</div>}>
+                        <ChatFeed />
+                    </React.Suspense>
                 </div>
             );
         }
 
-        ReactDOM.render(<App />, document.getElementById("root"));
+        ReactDOM.render(
+            <RecoilRoot>
+                <App />
+            </RecoilRoot>,
+            document.getElementById("root")
+        );
     </script>
 </body>
 </html>
