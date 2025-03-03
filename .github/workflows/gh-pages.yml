@@ -36,9 +36,11 @@ jobs:
           path: ./.cache
           key: ${{ runner.os }}-eleventy-fetch-cache
 
-
       - run: npm install
       - run: npm run build-ghpages
+
+      - name: Add CNAME
+        run: echo "on-the-ground.org" > ./CNAME
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
