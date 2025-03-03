@@ -3,10 +3,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Blog Title</title>
   <subtitle>This is a longer description about your blog.</subtitle>
-  <link href="https://example.com/eleventy-base-blog/feed/feed.xml" rel="self" />
-  <link href="https://example.com/eleventy-base-blog/" />
-  <updated>2025-03-03T09:46:38Z</updated>
-  <id>https://example.com/eleventy-base-blog/</id>
+  <link href="https://example.com/SocraticChatGPT/feed/feed.xml" rel="self" />
+  <link href="https://example.com/SocraticChatGPT/" />
+  <updated>2025-03-03T10:04:39Z</updated>
+  <id>https://example.com/SocraticChatGPT/</id>
   <author>
     <name>Your Name</name>
   </author>
