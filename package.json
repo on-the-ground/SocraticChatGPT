@@ -1,26 +1,25 @@
 {
-	"name": "SocraticChatGPT",
+	"name": "on-the-ground",
 	"version": "9.0.0",
 	"description": "A starter repository for a blog web site using the Eleventy site generator.",
 	"type": "module",
 	"scripts": {
 		"build": "npx @11ty/eleventy",
 		"build-nocolor": "cross-env NODE_DISABLE_COLORS=1 npx @11ty/eleventy",
-		"build-ghpages": "npx @11ty/eleventy --pathprefix=/SocraticChatGPT/",
+		"build-ghpages": "npx @11ty/eleventy --pathprefix=/on-the-ground.github.io/",
 		"start": "npx @11ty/eleventy --serve --quiet",
-		"start-ghpages": "npx @11ty/eleventy --pathprefix=/SocraticChatGPT/ --serve --quiet",
+		"start-ghpages": "npx @11ty/eleventy --pathprefix=/on-the-ground.github.io/ --serve --quiet",
 		"debug": "cross-env DEBUG=Eleventy* npx @11ty/eleventy",
 		"debugstart": "cross-env DEBUG=Eleventy* npx @11ty/eleventy --serve --quiet",
 		"benchmark": "cross-env DEBUG=Eleventy:Benchmark* npx @11ty/eleventy"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/on-the-ground/SocraticChatGPT.git"
+		"url": "git://github.com/on-the-ground/on-the-ground.github.io.git"
 	},
 	"author": {
-		"name": "Zach Leatherman",
-		"email": "zachleatherman@gmail.com",
-		"url": "https://zachleat.com/"
+		"name": "Joohyung Park",
+		"email": "joohyung.park@on-the-ground.org"
 	},
 	"license": "MIT",
 	"engines": {
@@ -31,9 +30,9 @@
 		"url": "https://opencollective.com/11ty"
 	},
 	"bugs": {
-		"url": "https://github.com/on-the-ground/SocraticChatGPT/issues"
+		"url": "https://github.com/on-the-ground/on-the-ground.github.io/issues"
 	},
-	"homepage": "https://github.com/on-the-ground/SocraticChatGPT#readme",
+	"homepage": "https://github.com/on-the-ground/on-the-ground.github.io#readme",
 	"devDependencies": {
 		"@11ty/eleventy": "^3.0.0",
 		"@11ty/eleventy-img": "^6.0.1",

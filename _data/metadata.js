@@ -1,11 +1,10 @@
 export default {
-	title: "Socratic ChatGPT",
-	url: "https://on-the-ground.org/SocraticChatGPT/",
+	title: "On The Ground",
+	url: "https://on-the-ground.org/",
 	language: "ko",
-	description: "Socratic method with ChatGPT",
+	description: "Keep your feet on the ground.",
 	author: {
 		name: "Joohyung Park",
 		email: "joohyung.park@on-the-ground.org"
-		// url: "https://example.com/about-me/"
 	}
 }
