@@ -3,18 +3,18 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Blog Title</title>
   <subtitle>This is a longer description about your blog.</subtitle>
-  <link href="https://example.com/SocraticChatGPT/feed/feed.xml" rel="self" />
-  <link href="https://example.com/SocraticChatGPT/" />
-  <updated>2025-03-03T11:18:43Z</updated>
-  <id>https://example.com/SocraticChatGPT/</id>
+  <link href="https://example.com/on-the-ground.github.io/feed/feed.xml" rel="self" />
+  <link href="https://example.com/on-the-ground.github.io/" />
+  <updated>2025-03-03T11:34:50Z</updated>
+  <id>https://example.com/on-the-ground.github.io/</id>
   <author>
     <name>Your Name</name>
   </author>
   <entry>
     <title></title>
-    <link href="https://example.com/SocraticChatGPT/blog/0102_%EA%B0%90%EC%A0%95%EA%B3%BC_%EA%B1%B0%EB%A6%AC%EB%91%90%EA%B3%A0_%EC%A1%B4%EC%A4%91%ED%95%98%EA%B8%B0/" />
-    <updated>2025-03-03T11:18:43Z</updated>
-    <id>https://example.com/SocraticChatGPT/blog/0102_%EA%B0%90%EC%A0%95%EA%B3%BC_%EA%B1%B0%EB%A6%AC%EB%91%90%EA%B3%A0_%EC%A1%B4%EC%A4%91%ED%95%98%EA%B8%B0/</id>
+    <link href="https://example.com/on-the-ground.github.io/blog/0102_%EA%B0%90%EC%A0%95%EA%B3%BC_%EA%B1%B0%EB%A6%AC%EB%91%90%EA%B3%A0_%EC%A1%B4%EC%A4%91%ED%95%98%EA%B8%B0/" />
+    <updated>2025-03-03T11:34:50Z</updated>
+    <id>https://example.com/on-the-ground.github.io/blog/0102_%EA%B0%90%EC%A0%95%EA%B3%BC_%EA%B1%B0%EB%A6%AC%EB%91%90%EA%B3%A0_%EC%A1%B4%EC%A4%91%ED%95%98%EA%B8%B0/</id>
     <content type="html">&lt;!DOCTYPE html&gt; &lt;html data-build=&quot;prod-902f8aa3486fad1f50afc92aa488feb7f3ac726d&quot; dir=&quot;ltr&quot; class=&quot;dark&quot; style=&quot;color-scheme:dark&quot;&gt;&lt;!--
  Page saved with SingleFile 
  url: https://chatgpt.com/c/67c143dd-2eec-8010-9e4d-2a1551e964a6 
@@ -23,9 +23,9 @@
   </entry>
   <entry>
     <title></title>
-    <link href="https://example.com/SocraticChatGPT/blog/0101_%ED%9E%98%EB%93%A0_%EC%9D%B8%EC%83%9D%EC%9D%98_%EA%B0%80%EC%9D%B4%EB%93%9C%EA%B0%80_%EB%90%98%EC%96%B4%EC%A3%BC%EB%8A%94_%EC%A2%85%EA%B5%90/" />
-    <updated>2025-03-03T11:18:43Z</updated>
-    <id>https://example.com/SocraticChatGPT/blog/0101_%ED%9E%98%EB%93%A0_%EC%9D%B8%EC%83%9D%EC%9D%98_%EA%B0%80%EC%9D%B4%EB%93%9C%EA%B0%80_%EB%90%98%EC%96%B4%EC%A3%BC%EB%8A%94_%EC%A2%85%EA%B5%90/</id>
+    <link href="https://example.com/on-the-ground.github.io/blog/0101_%ED%9E%98%EB%93%A0_%EC%9D%B8%EC%83%9D%EC%9D%98_%EA%B0%80%EC%9D%B4%EB%93%9C%EA%B0%80_%EB%90%98%EC%96%B4%EC%A3%BC%EB%8A%94_%EC%A2%85%EA%B5%90/" />
+    <updated>2025-03-03T11:34:50Z</updated>
+    <id>https://example.com/on-the-ground.github.io/blog/0101_%ED%9E%98%EB%93%A0_%EC%9D%B8%EC%83%9D%EC%9D%98_%EA%B0%80%EC%9D%B4%EB%93%9C%EA%B0%80_%EB%90%98%EC%96%B4%EC%A3%BC%EB%8A%94_%EC%A2%85%EA%B5%90/</id>
     <content type="html">&lt;!DOCTYPE html&gt; &lt;html data-build=&quot;prod-902f8aa3486fad1f50afc92aa488feb7f3ac726d&quot; dir=&quot;ltr&quot; class=&quot;dark&quot; style=&quot;color-scheme:dark&quot;&gt;&lt;!--
  Page saved with SingleFile 
  url: https://chatgpt.com/c/67be6d7d-9794-8010-bd06-c676d6b2b2a8 
@@ -34,9 +34,9 @@
   </entry>
   <entry>
     <title></title>
-    <link href="https://example.com/SocraticChatGPT/blog/0100_ENFP%EC%9D%98_%EC%83%9D%EC%A1%B4_%EA%B3%A0%EB%AF%BC/" />
-    <updated>2025-03-03T11:18:43Z</updated>
-    <id>https://example.com/SocraticChatGPT/blog/0100_ENFP%EC%9D%98_%EC%83%9D%EC%A1%B4_%EA%B3%A0%EB%AF%BC/</id>
+    <link href="https://example.com/on-the-ground.github.io/blog/0100_ENFP%EC%9D%98_%EC%83%9D%EC%A1%B4_%EA%B3%A0%EB%AF%BC/" />
+    <updated>2025-03-03T11:34:50Z</updated>
+    <id>https://example.com/on-the-ground.github.io/blog/0100_ENFP%EC%9D%98_%EC%83%9D%EC%A1%B4_%EA%B3%A0%EB%AF%BC/</id>
     <content type="html">&lt;!DOCTYPE html&gt; &lt;html data-build=&quot;prod-902f8aa3486fad1f50afc92aa488feb7f3ac726d&quot; dir=&quot;ltr&quot; class=&quot;dark&quot; style=&quot;color-scheme:dark&quot;&gt;&lt;!--
  Page saved with SingleFile 
  url: https://chatgpt.com/c/67c0105f-fb78-8010-b920-a0182bdadb25 
@@ -45,9 +45,9 @@
   </entry>
   <entry>
     <title></title>
-    <link href="https://example.com/SocraticChatGPT/blog/0099_%EA%B0%80%EC%9E%A5_%EA%B0%95%ED%95%9C_%ED%9E%98_%EA%B3%B5%EA%B0%90/" />
-    <updated>2025-03-03T11:18:43Z</updated>
-    <id>https://example.com/SocraticChatGPT/blog/0099_%EA%B0%80%EC%9E%A5_%EA%B0%95%ED%95%9C_%ED%9E%98_%EA%B3%B5%EA%B0%90/</id>
+    <link href="https://example.com/on-the-ground.github.io/blog/0099_%EA%B0%80%EC%9E%A5_%EA%B0%95%ED%95%9C_%ED%9E%98_%EA%B3%B5%EA%B0%90/" />
+    <updated>2025-03-03T11:34:50Z</updated>
+    <id>https://example.com/on-the-ground.github.io/blog/0099_%EA%B0%80%EC%9E%A5_%EA%B0%95%ED%95%9C_%ED%9E%98_%EA%B3%B5%EA%B0%90/</id>
     <content type="html">&lt;!DOCTYPE html&gt; &lt;html data-build=&quot;prod-902f8aa3486fad1f50afc92aa488feb7f3ac726d&quot; dir=&quot;ltr&quot; class=&quot;dark&quot; style=&quot;color-scheme:dark&quot;&gt;&lt;!--
  Page saved with SingleFile 
  url: https://chatgpt.com/c/67b82080-3ad8-8010-a757-755ed9e2bfc5 
